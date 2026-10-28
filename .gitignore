@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+work/
+outputs/*
+.DS_Store
+.env
+*.pt
+# Ship only the checkpoint used by the app; exclude datasets and experiments.
+!outputs/gemlens-balanced-ranges.pt
+.env.*

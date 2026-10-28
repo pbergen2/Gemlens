@@ -1,0 +1,771 @@
+/*
+ * GEMLENS — plain CSS, no build step required.
+ *
+ * 01 Theme / background     06 Photo-help popup
+ * 02 Base styles           07 Boundary controls
+ * 03 Workspace / branding  08 Condition report
+ * 04 Upload controls       09 About section
+ * 05 Image / annotations   10 Responsive layout
+ *
+ * app.js adds .has-report after a grade is assigned. It also controls
+ * [hidden], .active, .dragging and the numbered annotation buttons.
+ */
+
+/* 01. Theme and supplied Dragonite background artwork
+ * Change --page-art to swap the image. Cover fills the viewport;
+ * --art-position controls cropping and --art-scrim keeps text readable.
+ */
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  --page: #292b30;
+  --panel: #33353b;
+  --inset: #2c2e33;
+  --line: #4d5058;
+  --text: #efeff1;
+  --muted: #b6b8bf;
+  --green: #367450;
+  --green-hover: #40865d;
+  --focus: #b8d7bf;
+  --issue: #f3b76d;
+  --page-art: url('/assets/cardlens-background.png');
+  --art-position: center top;
+  --art-scrim: rgba(22, 24, 31, 0.62);
+}
+
+body {
+  margin: 0;
+  color: var(--text);
+  background: var(--page);
+  isolation: isolate;
+}
+
+/* Independent fixed layer: the background stays still as reports scroll. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: linear-gradient(var(--art-scrim), var(--art-scrim)), var(--page-art);
+  background-position: center, var(--art-position);
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+/* 02. Base elements and keyboard access */
+* {
+  box-sizing: border-box;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.small {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+
+.text-button {
+  padding: 8px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.text-button:hover {
+  color: var(--text);
+}
+
+/* Preserve native visibility states even on flex and grid components. */
+[hidden] {
+  display: none !important;
+}
+
+/* 03. Welcome and tool layout.
+ * The welcome occupies the first viewport. All panels remain in normal
+ * document flow; only body::before is fixed, keeping Dragonite stationary.
+ */
+.welcome {
+  min-height: 100svh;
+  padding: 24px 28px;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 28px;
+}
+.top-nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.top-nav a, .scroll-link, .section-link {
+  color: var(--text);
+  text-decoration: none;
+}
+.top-nav a {
+  padding: 12px 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.top-nav a:hover { background: var(--inset); }
+.welcome-brand {
+  align-self: center;
+  justify-self: center;
+  /* Keep the logo and name as one centered, horizontal wordmark. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 3vw, 32px);
+  max-width: 100%;
+}
+.welcome-brand img {
+  width: clamp(90px, 25vw, 300px);
+  flex-shrink: 0;
+  max-height: 45svh;
+  height: auto;
+  object-fit: contain;
+  border-radius: 20px;
+}
+.welcome-brand h1 {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 5.5rem);
+  font-weight: 700;
+  letter-spacing: -2px;
+  text-shadow: 0 3px 18px #0009;
+}
+.scroll-link {
+  justify-self: center;
+  padding: 12px 20px;
+  font-size: 2.5rem;
+  line-height: 1;
+  text-shadow: 0 2px 10px #000;
+  text-align: center;
+}
+.tool-section {
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  padding: 56px 28px;
+}
+#tool, #about { scroll-margin-top: 24px; }
+
+.workspace {
+  width: min(100%, 640px);
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.workspace.has-report {
+  width: min(100%, 1220px);
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+.scan-panel,
+.results-panel {
+  min-width: 0;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.18);
+}
+
+.panel-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.brand img {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+}
+
+.panel-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.step {
+  padding: 4px 6px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+/* 04. Side selector and upload controls */
+.side-controls {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 4px;
+  border-radius: 7px;
+  background: var(--inset);
+}
+
+.side {
+  width: 50%;
+  padding: 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.side span {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.side.active {
+  border-color: var(--line);
+  background: #41444b;
+  color: var(--text);
+}
+
+.scan-stage {
+  display: grid;
+  place-items: center;
+  min-height: 250px;
+  border: 1px dashed #666972;
+  border-radius: 8px;
+  background: var(--inset);
+}
+
+.scan-stage.dragging {
+  border-color: var(--focus);
+  background: #303f36;
+}
+
+#uploadEmpty {
+  padding: 36px;
+}
+
+.primary,
+.analyze-button {
+  padding: 13px 24px;
+  border: 1px solid #549269;
+  border-radius: 6px;
+  background: var(--green);
+  color: #fff;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.primary span {
+  margin-left: 10px;
+}
+
+.primary:hover:not(:disabled),
+.analyze-button:hover:not(:disabled) {
+  background: var(--green-hover);
+}
+
+.analyze-button {
+  width: 100%;
+}
+
+.privacy {
+  margin-top: 12px;
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.75rem;
+}
+
+#message {
+  margin-top: 14px;
+  color: #e6c69e;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+#message:empty {
+  display: none;
+}
+
+/* 05. Card preview and issue selection
+ * The canvas draws circles and labels. The matching list below makes each
+ * annotation accessible without relying on color or pointer interaction.
+ */
+#imageView {
+  width: 100%;
+  padding: 12px;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.image-caption {
+  display: block;
+  margin-top: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.image-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 5px;
+}
+
+.overlay-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+input[type="checkbox"],
+input[type="range"] {
+  accent-color: #86b794;
+}
+
+.issue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.issue-button {
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.issue-button[aria-pressed="true"] {
+  border-color: var(--issue);
+  background: #493e33;
+}
+
+.issue-button small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+/* 06. Photo-help popup
+ * Hover, keyboard focus and tap are supported. JS keeps it open while the
+ * pointer is over the popup; Escape and outside clicks dismiss it.
+ */
+.photo-help {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  margin: 18px 0;
+}
+
+.photo-help-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.info-icon {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-family: Georgia, serif;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.photo-help-popup {
+  position: absolute;
+  left: 0;
+  bottom: 100%;
+  z-index: 5;
+  width: min(360px, calc(100vw - 88px));
+  padding: 18px;
+  border: 1px solid #777b83;
+  border-radius: 8px;
+  background: #222429;
+  color: var(--text);
+  box-shadow: 0 10px 30px #0006;
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.photo-help-popup ul {
+  margin: 10px 0 0;
+  padding-left: 19px;
+  color: #c9cbd0;
+}
+
+.photo-help-popup li + li {
+  margin-top: 6px;
+}
+
+/* 07. Optional boundary editor */
+#cropControls {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+#cropControls summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+#cropControls p {
+  margin-top: 10px;
+}
+
+.crop-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 16px;
+  margin: 14px 0 6px;
+}
+
+.crop-grid label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.crop-grid input {
+  min-width: 0;
+  width: 100%;
+}
+
+/* 08. Report: only revealed after an assigned grade */
+.status-tag {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.7px;
+}
+
+.grade-card {
+  padding: 22px;
+  border: 1px solid #58645c;
+  border-radius: 8px;
+  background: #303e35;
+}
+
+.eyebrow {
+  color: #c2cfc6;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+}
+
+.grade {
+  margin: 8px 0;
+  font-size: clamp(3rem, 5vw, 4.25rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -2px;
+}
+
+.grade span {
+  margin-left: 10px;
+  color: #b8c5bc;
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+#gradeLabel {
+  color: #c2cfc6;
+  font-size: 0.875rem;
+}
+
+.grade-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px solid #536358;
+  color: #b8c5bc;
+  font-size: 0.75rem;
+}
+
+.criteria {
+  margin-top: 14px;
+}
+
+.criterion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.criterion strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.criterion small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.criterion .score {
+  max-width: 90px;
+  text-align: right;
+  font-size: 0.875rem;
+}
+
+#findings {
+  margin-top: 22px;
+}
+
+#findings ul {
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+#findings li + li {
+  margin-top: 8px;
+}
+
+.report-note {
+  display: flex;
+  gap: 8px;
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.download {
+  width: 100%;
+  margin-top: 22px;
+  padding: 12px;
+  border: 1px solid #6a6e77;
+  border-radius: 6px;
+  background: #41444b;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+/* 09. About: the former grading dialog, now a linked page section. */
+.about-section { padding: 40px 28px 80px; }
+.about-panel {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: clamp(24px, 5vw, 48px);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+.about-panel h2 { font-size: 1.75rem; }
+.about-panel p {
+  margin-top: 16px;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+}
+.about-panel h3 { margin-top: 28px; }
+.section-link { display: inline-block; margin-top: 28px; }
+.section-link:hover { text-decoration: underline; }
+
+/* 10. Responsive layout and reduced motion */
+@media (max-width: 900px) {
+  .workspace.has-report {
+    max-width: 640px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .welcome, .tool-section, .about-section {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .scan-panel,
+  .results-panel {
+    padding: 18px;
+  }
+
+  .panel-brand {
+    margin-bottom: 20px;
+  }
+
+  .brand {
+    gap: 6px;
+    font-size: 1.25rem;
+  }
+
+  .brand img {
+    width: 76px;
+    height: 76px;
+  }
+
+  .scan-stage {
+    min-height: 220px;
+  }
+
+  .side span {
+    display: block;
+    margin: 4px 0 0;
+  }
+
+  .overlay-toggle {
+    margin-left: 0;
+  }
+
+  .crop-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  button {
+    transition: background-color 140ms ease, color 140ms ease;
+  }
+}
+
+/* 11. Optional TCGdex reference picker. Grid wraps on narrow phone screens. */
+.catalog { margin: 18px 0; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--inset); }
+.catalog summary { cursor: pointer; }
+.catalog-form { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+.catalog-form label { display: grid; gap: 6px; flex: 1 1 120px; font-size: 13px; }
+.catalog input, .catalog select { min-width: 0; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--text); font: inherit; }
+.catalog-results { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; max-height: 420px; overflow-y: auto; }
+.catalog-card { display: grid; gap: 8px; padding: 10px; background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; text-align: left; }
+.catalog-card img { width: 100%; aspect-ratio: 600 / 825; object-fit: contain; }
+.catalog-card span { overflow-wrap: anywhere; font-size: 12px; }
+#catalogSelected { margin-top: 16px; }
+#referenceImage { width: min(100%, 240px); height: auto; }
+
+/* 12. Introduction between the welcome screen and the live upload tool.
+ * Keep the example separate from live results, with its caption always visible.
+ */
+.intro-section { padding: 56px 28px 24px; scroll-margin-top: 24px; }
+.intro-panel { max-width: 1100px; margin: 0 auto; padding: clamp(22px, 4vw, 44px); display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 32px; align-items: center; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); }
+.intro-copy h2 { margin: 12px 0 18px; font-size: clamp(1.7rem, 3vw, 2.5rem); line-height: 1.15; }
+.intro-copy p { line-height: 1.7; }
+.intro-copy .intro-note { color: var(--muted); font-size: 0.9rem; margin-top: 16px; }
+.scan-demo { margin: 0; min-width: 0; }
+.scan-demo img { display: block; width: 100%; height: auto; border-radius: 10px; }
+.scan-demo figcaption { margin-top: 12px; color: var(--muted); font-size: 0.8rem; line-height: 1.6; }
+@media (max-width: 800px) {
+  .intro-panel { grid-template-columns: 1fr; gap: 24px; }
+  .intro-section { padding: 32px 16px 16px; }
+}
+
+/* Real-photo example: overlays remain aligned as the photograph scales. */
+.real-example { display: grid; grid-template-columns: 1fr 0.85fr; gap: 20px; align-items: center; background: var(--inset); padding: 18px; border-radius: 12px; }
+.example-photo { position: relative; }
+.example-photo img { width: 100%; height: auto; display: block; }
+.example-marks { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; fill: none; stroke: #ffbd76; stroke-width: 9px; }
+.example-notes h3 { margin: 8px 0 12px; font-size: 1.3rem; }
+.example-notes .example-grade { font-size: 3.5rem; margin: 0; font-weight: 700; }
+.example-grade span { font-size: 1.1rem; color: var(--muted); }
+.example-notes ul { padding-left: 18px; font-size: .85rem; line-height: 1.65; color: var(--muted); }
+.example-notes .eyebrow { font-size: .65rem; }
+@media (max-width: 440px) { .real-example { grid-template-columns: 1fr; } .example-photo { max-width: 240px; margin: 0 auto; } }

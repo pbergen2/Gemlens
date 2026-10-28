@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="680" viewBox="0 0 900 680" role="img" aria-labelledby="title desc">
+<title id="title">Example card inspection</title><desc id="desc">A sample card with outlined boundaries, highlighted corner and edge wear, and an illustrative estimated grade range of six to seven.</desc>
+<rect width="900" height="680" rx="20" fill="#272a30"/>
+<g font-family="system-ui, sans-serif">
+<text x="36" y="48" fill="#b6b8bf" font-size="18" letter-spacing="3">EXAMPLE INSPECTION</text>
+<!-- Original schematic card, not an image of a graded collectible. -->
+<rect x="65" y="90" width="345" height="480" rx="20" fill="#dfba63"/>
+<rect x="85" y="111" width="305" height="438" rx="8" fill="#3a5666"/>
+<text x="109" y="148" fill="#f4e8ce" font-size="23" font-weight="700">SAMPLE CARD</text>
+<rect x="106" y="171" width="263" height="220" rx="5" fill="#223d49"/>
+<path d="M106 353L172 266 229 326 294 230 369 340V391H106Z" fill="#547b75"/>
+<circle cx="169" cy="219" r="24" fill="#e9c779"/>
+<path d="M112 428H359M112 452H359M112 476H310M112 513H356" stroke="#a7b6b4" stroke-width="6" opacity=".7"/>
+<path d="M67 108Q66 92 85 91L93 95 82 100 77 112Z" fill="#faf4de"/>
+<path d="M405 451L410 444 410 486 404 479 406 470 401 462Z" fill="#faf4de"/>
+<!-- Boundary and annotations share coordinates with their visible targets. -->
+<rect x="61" y="86" width="353" height="488" rx="22" fill="none" stroke="#a9dbaf" stroke-width="3"/>
+<circle cx="81" cy="104" r="29" fill="none" stroke="#f3b76d" stroke-width="4"/>
+<path d="M104 88L455 88 480 122" fill="none" stroke="#f3b76d" stroke-width="2"/>
+<circle cx="406" cy="465" r="29" fill="none" stroke="#f3b76d" stroke-width="4"/>
+<path d="M435 465H468L490 432" fill="none" stroke="#f3b76d" stroke-width="2"/>
+<text x="484" y="150" fill="#f3b76d" font-size="25" font-weight="600">Possible whitening</text>
+<text x="484" y="182" fill="#b6b8bf" font-size="20">Check this corner closely.</text>
+<rect x="480" y="224" width="370" height="156" rx="12" fill="#363b40"/>
+<text x="506" y="260" fill="#b6b8bf" font-size="17" letter-spacing="1">EXAMPLE GRADE RANGE</text>
+<text x="506" y="330" fill="#e9eee9" font-size="60" font-weight="700">6–7<tspan font-size="26" fill="#b6b8bf"> / 10</tspan></text>
+<text x="490" y="430" fill="#f3b76d" font-size="25" font-weight="600">Possible edge wear</text>
+<text x="490" y="463" fill="#b6b8bf" font-size="20">Inspect the highlighted area.</text>
+<path d="M235 574V607H476" fill="none" stroke="#a9dbaf" stroke-width="2"/>
+<text x="490" y="614" fill="#a9dbaf" font-size="22">Card boundary</text>
+<text x="65" y="649" fill="#b6b8bf" font-size="17">Illustration only · not a measured result</text>
+</g></svg>

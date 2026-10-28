@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#292b30"><meta name="description" content="Inspect Pokémon card centering, edges and corners with transparent Python image analysis."><title>GemLens</title><link rel="stylesheet" href="/style.css?v=wordmark-2"></head>
+<body>
+<header class="welcome" id="home">
+  <nav class="top-nav" aria-label="Main navigation"><a href="#tool">Inspect card</a><a href="#about">About</a></nav>
+  <div class="welcome-brand"><img src="/assets/gemlens-logo.png?v=transparent" alt="Magnifying glass inspecting a Poké Ball" width="300" height="300"><h1>GemLens</h1></div>
+  <a class="scroll-link" href="#how-it-works" aria-label="Scroll down to see how GemLens works"><span aria-hidden="true">↓</span></a>
+</header>
+<main>
+<!-- A short introduction before the live tool. The illustration is not a scan result. -->
+<section class="intro-section" id="how-it-works" aria-labelledby="introTitle">
+  <div class="intro-panel">
+    <div class="intro-copy">
+      <p class="eyebrow">BEFORE YOU SUBMIT</p>
+      <h2 id="introTitle">A closer look at your card.</h2>
+      <p>Upload a clear photo to check centering, spot possible edge and corner whitening, and get a trained grade estimate from front and back photos.</p>
+      <p class="intro-note">See where to look, then check the highlighted areas yourself. Fine scratches and dents still need a human eye.</p>
+      <a class="section-link" href="#tool">Try your card ↓</a>
+    </div>
+    <figure class="scan-demo">
+      <div class="real-example">
+        <div class="example-photo">
+          <img src="/assets/dragonite-grade7-example.jpg" alt="Actual Dragonite ex card photo with inspection areas highlighted; the source dataset records a grade of 7." width="1144" height="1590" loading="lazy">
+          <svg class="example-marks" viewBox="0 0 1144 1590" aria-hidden="true"><circle cx="60" cy="60" r="42"/><circle cx="1090" cy="1525" r="42"/></svg>
+        </div>
+        <div class="example-notes">
+          <p class="eyebrow">REAL CARD EXAMPLE</p>
+          <h3>Dragonite ex</h3>
+          <p class="example-grade">7 <span>/ 10</span></p>
+          <p class="small">Grade recorded in the source dataset</p>
+          <ul><li>Compare opposing borders</li><li>Check corners and edges</li><li>Inspect the surface under angled light</li></ul>
+          <p class="small">Circles mark inspection areas, not confirmed defects.</p>
+        </div>
+      </div>
+      <figcaption>Actual card photo from the Pokémon TCG grading dataset. Grade 7 is source-reported, not independently verified. Markings are illustrative; this is not a GemLens prediction.</figcaption>
+    </figure>
+  </div>
+</section>
+<section class="tool-section" id="tool" aria-labelledby="scanTitle">
+<div class="workspace" id="workspace"><section class="scan-panel" aria-labelledby="scanTitle">
+<div class="panel-heading"><h2 id="scanTitle"><span class="step">01</span> Upload image here</h2><span class="small">JPG, PNG or WebP · up to 15 MB</span></div><div class="side-controls"><button id="frontTab" class="side active" aria-pressed="true">Front <span id="frontStatus">Required</span></button><button id="backTab" class="side" aria-pressed="false">Back <span id="backStatus">Required for grade</span></button></div>
+<div id="dropzone" class="scan-stage"><div id="uploadEmpty"><button class="primary" id="choose">Choose photo <span>↗</span></button></div><div id="imageView" hidden><canvas id="preview" aria-label="Your card with detected inspection regions"></canvas><span class="image-caption" id="imageCaption"></span></div><input id="file" type="file" accept="image/jpeg,image/png,image/webp" hidden></div>
+<div class="image-actions" id="imageActions" hidden><button id="replace" class="text-button">Replace photo</button><button id="remove" class="text-button">Remove</button><label class="overlay-toggle"><input type="checkbox" id="overlay" checked> Show issues</label></div>
+<!-- Optional catalog reference: this does not supply a grade. -->
+<details class="catalog" id="catalogPanel">
+  <summary>Find your card · optional</summary>
+  <p class="small">Choose the matching artwork and set. This reference does not change your estimated grade.</p>
+  <form id="catalogForm" class="catalog-form">
+    <label>Card name<input id="catalogQuery" minlength="2" maxlength="80" placeholder="e.g. Alakazam" required></label>
+    <label>Language<select id="catalogLanguage"><option value="en">English</option><option value="ja">Japanese</option><option value="fr">French</option><option value="de">German</option><option value="es">Spanish</option><option value="it">Italian</option><option value="pt">Portuguese</option></select></label>
+    <button type="submit" class="text-button">Search</button>
+  </form>
+  <p id="catalogStatus" role="status" aria-live="polite"></p>
+  <div id="catalogResults" class="catalog-results"></div>
+  <button id="catalogMore" class="text-button" hidden>Next results →</button>
+  <div id="catalogSelected" hidden><img id="referenceImage" alt="" loading="lazy" referrerpolicy="no-referrer"><p id="referenceName"></p><button id="catalogClear" class="text-button">Clear reference</button></div>
+  <p class="small">References from <a href="https://tcgdex.dev/" target="_blank" rel="noopener noreferrer">TCGdex</a>. Search text is shared with TCGdex; your uploaded photos are not.</p>
+</details>
+<div id="issueList" class="issue-list" aria-label="Issues on the selected side" hidden></div>
+<details id="cropControls" hidden><summary>Adjust card boundary</summary><p class="small">Align the green outline with the card, then reinspect.</p><div class="crop-grid"><label>Left <input id="cropL" type="range" min="0" max="80" value="0"></label><label>Top <input id="cropT" type="range" min="0" max="80" value="0"></label><label>Right <input id="cropR" type="range" min="20" max="100" value="100"></label><label>Bottom <input id="cropB" type="range" min="20" max="100" value="100"></label></div><button id="applyCrop" class="text-button">Reinspect this boundary</button></details>
+<div class="photo-help" id="photoHelp">
+  <button id="photoHelpToggle" class="photo-help-toggle" aria-expanded="false" aria-controls="photoHelpPopup"><span class="info-icon" aria-hidden="true">i</span> How to take a good photo</button>
+  <div id="photoHelpPopup" class="photo-help-popup" hidden>
+    <strong>Keep the details visible</strong>
+    <ul><li>Remove the sleeve and place one card on a plain, dark background.</li><li>Photograph it straight from above, upright, with all four corners visible.</li><li>Use soft, even light. Avoid flash, glare and shadows.</li><li>Keep the card sharp and at least 900 pixels tall. Include both front and back for a trained grade estimate.</li></ul>
+  </div>
+</div><button class="analyze-button" id="analyze" disabled>Inspect card <span>→</span></button><p class="privacy" id="privacy">Photos stay on this device.</p><p id="message" role="status" aria-live="polite"></p></section>
+<aside class="results-panel" id="resultsPanel" aria-labelledby="reportTitle" hidden><div class="panel-heading"><h2 id="reportTitle" tabindex="-1"><span class="step">02</span> Condition report</h2><span class="status-tag" id="reportStatus">AWAITING SCAN</span></div><div class="grade-card"><div><p class="eyebrow" id="gradeHeading">ESTIMATED GRADE</p><div class="grade" id="grade">—<span>/ 10</span></div><p id="gradeLabel"></p></div><div class="grade-footer"><span id="confidence">Preliminary screening</span><span id="sideCount">No images added</span></div></div>
+<div class="criteria"><div id="criteriaRows"></div></div><div id="findings" hidden></div><div class="report-note"><span>ⓘ</span><p>This is an experimental estimate, not a certified grade. Photos can miss dents, fine scratches and surface damage. A clean scan does not guarantee a high grade.</p></div><button id="download" class="download" hidden>Download inspection report ↓</button></aside></div>
+</section>
+<section class="about-section" id="about" aria-labelledby="aboutTitle">
+  <div class="about-panel"><h2 id="aboutTitle">About GemLens</h2><p>Upload clear front and back photos. GemLens finds a rectangular card boundary, looks for consistent inner-border transitions, and highlights bright, low-color patches near the edges and corners.</p><h3>What the numbers mean</h3><p>Centering compares opposing border widths. Edge and corner scores use the area of possible whitening. The overall estimate uses a PyTorch model trained on 10,000 paired card scans. The criterion scores and issue markers are separate rule-based checks, not learned subgrades or explanations of the model’s estimate. They have not been calibrated against professional grades.</p><h3>What needs a human eye</h3><p>Artwork, silver borders, glare and sleeves can look like damage. Full-art borders can make centering unmeasurable. The tool cannot reliably detect dents, texture wear, authenticity, or fine scratches. Surface condition is flagged for manual review and is not scored.</p><h3>Reading issue labels</h3><p>Orange circles locate suspected whitening. Select a label below the image to isolate it. Light patches span less than 2.5% of the card width or height, moderate patches span 2.5–8%, and pronounced patches span at least 8%. These describe detected extent, not confirmed damage or a calibrated severity rating.</p><h3>Built with Python</h3><p>The Python server runs the trained PyTorch model on front and back photos, including corner and edge details. Photos are processed in memory and are not saved. Browser-only mode provides clearly labeled rule-based inspection without the trained model. Model results are experimental: validation used card scans, and performance on everyday phone photos has not been independently established.</p><p class="small">Best results: an upright card, a plain dark background, no sleeve, all corners visible, and at least 900 pixels along the card’s height. Adjust the detected boundary when needed.</p>
+  <a class="section-link" href="#tool">Inspect a card ↑</a></div>
+</section>
+</main>
+<script type="module" src="/app.js?v=trained-2"></script></body></html>
